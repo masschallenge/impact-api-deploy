@@ -1,0 +1,100 @@
+version: '2'
+defaults:
+  DEPLOYMENT: dev
+  DJANGO_CONFIGURATION: Dev
+  DJANGO_SECRET_KEY: d60a10fc-ffb7-4798-89c3-b28aa06d8659
+  DJANGO_HIREDIS_CACHE_LOCATION: redis:6379
+  DJANGO_ALLOWED_HOSTS: ""
+  DATABASE_URL: mysql://root:root@mysql/mc_dev
+  EMAIL_URL: console://
+  MYSQL_ROOT_PASSWORD: root
+  MYSQL_DATABASE: mc_dev
+  DATA_SOURCE_ENDPOINT: ""
+  WEB_USER: root
+  DJANGO_ROOT: /wwwroot
+services:
+  mysql:
+    image: mysql
+    ports:
+      - "3307:3306"
+    volumes:
+      - $PWD/mysql/conf.d/my.cnf:/etc/mysql/conf.d/my.cnf
+      - $PWD/mysql/data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: {{ MYSQL_PASSWORD }}
+      MYSQL_DATABASE: {{MYSQL_DATABASE}}
+      DJANGO_ROOT: '{{ DJANGO_ROOT }}'
+      DJANGO_VENV: '{{ DJANGO_VENV }}'
+  # Redis
+  redis:
+    image: redis
+    volumes:
+      - $PWD/redis:/var/lib/redis/data
+  # Nginx
+  nginx:
+    image: library/nginx
+    volumes:
+      - $PWD/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - $PWD/web/impact/media:/media:ro
+      - $PWD/web/impact/static:/static:ro
+    links:
+      - web
+    dev_overrides:
+      ports: []
+      command: /bin/false
+    environment:
+      VIRTUAL_HOST: impact.dev
+  # Assets
+  assets:
+    image: donnex/assets
+    ports:
+      - "35729:35729"
+    volumes:
+      - ./assets/gulpfile.js:/gulp/gulpfile.js:ro
+      - ./web/impact/sass:/gulp/sass
+      - ./web/impact/static/css:/gulp/css
+      - ./web/impact/static/js:/gulp/js
+  # Web python
+  web:
+    image: "python:3.6"
+    entrypoint: [/usr/bin/entrypoint.sh]
+    ports:
+      - "8000:8000"
+    volumes:
+      - $PWD/web/impact:{{DJANGO_ROOT}}
+    depends_on:
+      - mysql
+    links:
+      - mysql
+      - redis
+    user: {{WEB_USER}}
+    environment:
+      MYSQL_ROOT_PASSWORD: {{ MYSQL_PASSWORD }}
+      MYSQL_DATABASE: {{MYSQL_DATABASE}}
+      DATA_SOURCE_ENDPOINT: {{DATA_SOURCE_ENDPOINT}}
+      DJANGO_CONFIGURATION: {{DJANGO_CONFIGURATION}}
+      DJANGO_SECRET_KEY: {{DJANGO_SECRET_KEY}}
+      DJANGO_HIREDIS_CACHE_LOCATION: {{DJANGO_HIREDIS_CACHE_LOCATION}}
+      DJANGO_ALLOWED_HOSTS: {{DJANGO_ALLOWED_HOSTS}}
+      DATABASE_URL: mysql://{{MYSQL_USER}}:{{MYSQL_PASSWORD}}@mysql/{{MYSQL_DATABASE}}
+      EMAIL_URL: {{EMAIL_URL}}
+    dev_overrides:
+      environment:
+        DEPLOYMENT: dev
+  start_dependencies:
+      image: "python:3.6"
+      depends_on:
+        - web
+        - mysql
+      links:
+        - mysql
+        - redis
+        - web
+      command: >
+        /bin/bash -c "
+        until $$(curl --output /dev/null --silent --head --fail http://web:8000); do
+              echo \"BUILDING...\"
+              sleep 5
+          done; echo \"BUILD COMPLETE - visit http://localhost:8000 in a browser\";"
+
+registries: {}

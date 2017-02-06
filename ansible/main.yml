@@ -1,0 +1,26 @@
+- hosts: all
+  gather_facts: no
+  strategy: debug
+  vars:
+    docker_compose_version: 2
+
+- hosts: web
+  roles:
+  - django-gunicorn
+
+- hosts: gulp
+  roles:
+  - gulp-static
+
+- hosts: nginx
+  roles:
+  - role: ansible.nginx-container
+    ASSET_PATHS:
+    - /tmp/static
+    PROXY: yes
+    PROXY_PASS: http://django:8080
+    PROXY_LOCATION: "~* /(admin|api)"
+
+- hosts: mysql
+  roles:
+  - geerlingguy.mysql
