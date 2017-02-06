@@ -5,3 +5,4 @@ DJANGO_STATIC_ROOT: /wwwroot/static-compiled
 DEPLOYMENT: dev
 DJANGO_VENV: .venv
 DJANGO_ALLOWED_HOSTS: "*"
+DATA_SOURCE_ENDPOINT: sqlite:////wwwroot/impact//tests/sql/db.test.sqlite3

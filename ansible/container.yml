@@ -7,9 +7,9 @@ defaults:
   DJANGO_ALLOWED_HOSTS: ""
   DATABASE_URL: mysql://root:root@mysql/mc_dev
   EMAIL_URL: console://
-  MYSQL_ROOT_PASSWORD: root
+  MYSQL_PASSWORD: root
   MYSQL_DATABASE: mc_dev
-  DATA_SOURCE_ENDPOINT: ""
+  DATA_SOURCE_ENDPOINT: sqlite:////wwwroot/impact//tests/sql/db.test.sqlite3
   WEB_USER: root
   DJANGO_ROOT: /wwwroot
 services:
@@ -32,7 +32,7 @@ services:
       - $PWD/redis:/var/lib/redis/data
   # Nginx
   nginx:
-    image: library/nginx
+    image: nginx
     volumes:
       - $PWD/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - $PWD/web/impact/media:/media:ro
