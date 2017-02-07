@@ -5,7 +5,10 @@ services:
 before_install:
 - cat ~/.ssh/config
 - openssl aes-256-cbc -K $encrypted_254fbb7fb5b5_key -iv $encrypted_254fbb7fb5b5_iv
-  -in deploy_key.enc -out ~/.ssh/deploy_key -d
+  -in deploy_key.enc -out ~/.ssh/id_rsa -d
+- chmod 600 ~/.ssh/id_rsa*
+- eval `ssh-agent -s`
+- ssh-add ~/.ssh/id_rsa
 - sudo apt-add-repository 'deb http://archive.ubuntu.com/ubuntu trusty-backports universe'
 - sudo apt-get update -qq
 - sudo apt-get install -y -o Dpkg::Options::="--force-confold" --force-yes docker-engine
