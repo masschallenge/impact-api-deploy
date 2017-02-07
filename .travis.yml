@@ -16,4 +16,9 @@ install:
 - pip install git+https://github.com/ansible/ansible-container.git
 - pip install ansible
 script:
-- git clone git@github.com:masschallenge/impact-api.git
+- mkdir build
+- git clone git@github.com:masschallenge/impact-api.git build
+- mv ansible build
+- cd build
+- ansible-container build
+
