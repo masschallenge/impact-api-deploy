@@ -10,10 +10,12 @@ defaults:
   MYSQL_PASSWORD: root
   MYSQL_DATABASE: mc_dev
   DATA_SOURCE_ENDPOINT: sqlite:////wwwroot/impact//tests/sql/db.test.sqlite3
-  WEB_USER: root
-  DJANGO_ROOT: /wwwroot
+  WEB_USER: impact_user
+  DJANGO_ROOT: /wwwroot/app
+  DJANGO_VENV: /wwwroot/.venv
 services:
   mysql:
+    user: mysql
     image: mysql
     ports:
       - "3307:3306"
@@ -25,11 +27,13 @@ services:
       MYSQL_DATABASE: {{MYSQL_DATABASE}}
       DJANGO_ROOT: '{{ DJANGO_ROOT }}'
       DJANGO_VENV: '{{ DJANGO_VENV }}'
+    command: [ "mysqld"]
   # Redis
   redis:
     image: redis
     volumes:
       - $PWD/redis:/var/lib/redis/data
+    command: ["redis-server"]
   # Nginx
   nginx:
     image: nginx
@@ -41,12 +45,14 @@ services:
       - web
     dev_overrides:
       ports: []
-      command: /bin/false
+      command: '/bin/false'
     environment:
       VIRTUAL_HOST: impact.dev
+    command: ['nginx', '-c', '/etc/nginx/nginx.conf']
   # Assets
   assets:
     image: donnex/assets
+    command: /bin/false
     ports:
       - "35729:35729"
     volumes:
@@ -57,7 +63,6 @@ services:
   # Web python
   web:
     image: "python:3.6"
-    entrypoint: [/usr/bin/entrypoint.sh]
     ports:
       - "8000:8000"
     volumes:
@@ -67,7 +72,7 @@ services:
     links:
       - mysql
       - redis
-    user: {{WEB_USER}}
+    user: root
     environment:
       MYSQL_ROOT_PASSWORD: {{ MYSQL_PASSWORD }}
       MYSQL_DATABASE: {{MYSQL_DATABASE}}
@@ -78,23 +83,22 @@ services:
       DJANGO_ALLOWED_HOSTS: {{DJANGO_ALLOWED_HOSTS}}
       DATABASE_URL: mysql://{{MYSQL_USER}}:{{MYSQL_PASSWORD}}@mysql/{{MYSQL_DATABASE}}
       EMAIL_URL: {{EMAIL_URL}}
+      DJANGO_ROOT: {{DJANGO_ROOT}}
+      DJANGO_VENV: {{DJANGO_VENV}}
     dev_overrides:
       environment:
         DEPLOYMENT: dev
-  start_dependencies:
-      image: "python:3.6"
-      depends_on:
-        - web
-        - mysql
-      links:
-        - mysql
-        - redis
-        - web
-      command: >
-        /bin/bash -c "
-        until $$(curl --output /dev/null --silent --head --fail http://web:8000); do
-              echo \"BUILDING...\"
-              sleep 5
-          done; echo \"BUILD COMPLETE - visit http://localhost:8000 in a browser\";"
-
-registries: {}
+        MYSQL_ROOT_PASSWORD: {{ MYSQL_PASSWORD }}
+        MYSQL_DATABASE: {{MYSQL_DATABASE}}
+        DATA_SOURCE_ENDPOINT: {{DATA_SOURCE_ENDPOINT}}
+        DJANGO_CONFIGURATION: {{DJANGO_CONFIGURATION}}
+        DJANGO_SECRET_KEY: {{DJANGO_SECRET_KEY}}
+        DJANGO_HIREDIS_CACHE_LOCATION: {{DJANGO_HIREDIS_CACHE_LOCATION}}
+        DJANGO_ALLOWED_HOSTS: {{DJANGO_ALLOWED_HOSTS}}
+        DATABASE_URL: mysql://{{MYSQL_USER}}:{{MYSQL_PASSWORD}}@mysql/{{MYSQL_DATABASE}}
+        EMAIL_URL: {{EMAIL_URL}}
+    command: ["/bin/bash", '-c', "/usr/bin/entrypoint.sh"]
+    
+registries:
+  production:
+    url: 997386117669.dkr.ecr.us-east-1.amazonaws.com/masschallenge/impact
