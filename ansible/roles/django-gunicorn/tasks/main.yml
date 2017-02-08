@@ -32,13 +32,6 @@
 - name: install virtualenv
   command: pip3 install virtualenv --upgrade
 
-- name: Install dumb init
-  get_url:
-    dest: /usr/bin/dumb-init
-    url: https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64
-    mode: 0775
-    validate_certs: no
-
 - name: Make Django user
   user:
     name: "{{ DJANGO_USER }}"
@@ -46,13 +39,7 @@
     group: root
     state: present
     createhome: yes
-    home: "{{ DJANGO_ROOT }}"
-
-- name: Copy source
-  synchronize:
-    src: "{{ lookup('pipe','dirname `pwd`') }}/web/impact"
-    dest: "{{ DJANGO_ROOT }}"
-  remote_user: "{{ DJANGO_USER }}"
+    home: "/wwwroot/home"
 
 - name: Change /django permissions
   file:
@@ -62,53 +49,16 @@
     group: root
     mode: 0775
 
-- name: Make virtualenv dir
-  file:
-    name: "{{DJANGO_ROOT}}/{{ DJANGO_VENV }}"
-    state: directory
-    owner: "{{ DJANGO_USER }}"
-    group: root
-    mode: 0775
-
-- name: Setup virtualenv
-  command: virtualenv -p python3 .
-  args:
-    chdir: "{{DJANGO_ROOT}}/{{ DJANGO_VENV }}"
-    creates: "{{DJANGO_ROOT}}/{{ DJANGO_VENV }}/bin/python3"
+- name: Copy source
+  synchronize:
+    src: "{{ lookup('pipe','dirname `pwd`') }}/web/impact/requirements"
+    dest: "{{ DJANGO_ROOT }}/requirements"
   remote_user: "{{ DJANGO_USER }}"
 
 - name: Install requirements
   pip:
     requirements: "{{ DJANGO_ROOT }}/requirements/{{DEPLOYMENT}}.txt"
-    virtualenv_python: 3.6
-    virtualenv: "{{DJANGO_ROOT}}/{{ DJANGO_VENV }}"
-  remote_user: "{{ DJANGO_USER }}"
-
-- name: Remove staticfiles dir
-  file: 
-    name: "{{ DJANGO_STATIC_ROOT }}"
-    state: absent
-
-- name: Make staticfiles dir
-  file:
-    name: "{{ DJANGO_STATIC_ROOT }}"
-    state: directory
-    owner: "{{ DJANGO_USER }}"
-    group: root
-    mode: 0775
-
-- name: Collect staticfiles
-  command: "{{ DJANGO_ROOT }}/{{ DJANGO_VENV }}/bin/python3 manage.py collectstatic --noinput"
-  args:
-    chdir: "{{ DJANGO_ROOT }}"
-  remote_user: "{{ DJANGO_USER }}"
-
-- name: Fetch Django static assets
-  synchronize:
-    src: "{{ DJANGO_STATIC_ROOT }}/"
-    dest: /tmp/static
-    mode: pull
-  remote_user: "{{ DJANGO_USER }}"
+  remote_user: "root"
 
 - name: Copy entrypoint
   copy:
