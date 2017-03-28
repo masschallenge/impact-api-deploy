@@ -26,9 +26,11 @@ before_script:
 - git clone git@github.com:masschallenge/impact-api.git build
 - cd build
 - git checkout AC-4034
+- echo "" >> docker-env
 - echo "DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}" >> docker-env
 - echo "DATABASE_URL=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}" >> docker-env
-
+- echo "" >> docker-env
+- cat docker-env
 - docker-compose build
 - docker-compose up -d 
 script:
