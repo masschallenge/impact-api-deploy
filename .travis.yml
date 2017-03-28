@@ -36,7 +36,7 @@ after_success:
 - pip install awscli;
 - export PATH=$PATH:$HOME/.local/bin;
 - eval $(aws ecr get-login --region us-east-1);
-- docker tag impactapiweb:latest $DOCKER_REGISTRY/impact:latest;
+- docker tag impactapi_web:latest $DOCKER_REGISTRY/impact:latest;
 - docker push $DOCKER_REGISTRY/impact:latest;
 - ecs-cli configure --region us-east-1 --access-key $AWS_ACCESS_KEY_ID --secret-key $AWS_SECRET_ACCESS_KEY --cluster test3;
 - ecs-cli compose -f docker-compose.prod.yml down;
