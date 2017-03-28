@@ -25,6 +25,7 @@ before_script:
 - mkdir build
 - git clone git@github.com:masschallenge/impact-api.git build
 - cd build
+- git checkout AC-4034
 - docker-compose build
 - docker-compose up -d 
 script:
