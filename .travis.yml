@@ -27,6 +27,7 @@ before_script:
 - cd build
 - git checkout AC-4034
 - docker-compose build
+- docker images
 - docker-compose up -d 
 script:
 - make test
