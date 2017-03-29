@@ -45,7 +45,7 @@ after_success:
 - docker push $DOCKER_REGISTRY/masschallenge/impact:latest;
 - docker tag build_nginx:latest $DOCKER_REGISTRY/nginx:latest
 - docker tag nginx:latest $DOCKER_REGISTRY/nginx:latest
-- ecs-cli configure --region us-east-1 --access-key $AWS_ACCESS_KEY_ID --secret-key $AWS_SECRET_ACCESS_KEY --cluster test3;
+- ecs-cli configure --region us-east-1 --access-key $AWS_ACCESS_KEY_ID --secret-key $AWS_SECRET_ACCESS_KEY --cluster test;
 - ecs-cli compose -f docker-compose.prod.yml down;
 - ecs-cli compose -f docker-compose.prod.yml up;
 
