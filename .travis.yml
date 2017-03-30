@@ -22,9 +22,8 @@ before_install:
 - sudo mv docker-compose /usr/local/bin
 - docker-compose --version
 before_script:
-- mkdir build
-- git clone git@github.com:masschallenge/impact-api.git build
-- cd build
+- git clone git@github.com:masschallenge/impact-api.git
+- cd impact-api
 - git checkout AC-4034
 - echo "" >> docker-env
 - echo "DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}" >> docker-env
