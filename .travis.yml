@@ -31,7 +31,7 @@ before_script:
 - echo "DATABASE_URL=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}" >> docker-env
 - echo "" >> docker-env
 - cat docker-env
-- docker-compose build
+- docker-compose build --no-cache
 - docker-compose up -d 
 script:
 - make test
