@@ -36,7 +36,7 @@ script:
 - make test
 after_success:
 - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
-- export DEPLOY_ENVIRONMENT=$(if [ "$BRANCH" == "master" ]; then echo "production"; else echo "test"; fi)
+-  if [ "$DEPLOY_ENVIRONMENT" == "" ]; then export DEPLOY_ENVIRONMENT=$(if [ "$BRANCH" == "master" ]; then echo "production"; else echo "staging"; fi); fi;
 - sudo curl -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest;
 - sudo chmod +x /usr/local/bin/ecs-cli;
 - pip install awscli;
